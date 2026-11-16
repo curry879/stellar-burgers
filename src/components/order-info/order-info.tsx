@@ -1,25 +1,47 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+
+import {
+  fetchOrderByNumber,
+  selectCurrentOrder,
+  selectFeedOrders,
+} from '../../services/feedSlice';
+import { selectIngredients } from '../../services/ingredientsSlice';
+import { useDispatch, useSelector } from '../../services/store';
 
 import type { TIngredient } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const ingredients = useSelector(selectIngredients);
+  const orders = useSelector(selectFeedOrders);
+  const currentOrder = useSelector(selectCurrentOrder);
 
-  /* Готовим данные для отображения */
+  const orderNumber = Number(number);
+
+  const orderFromFeed = orders.find((order) => order.number === orderNumber);
+
+  const orderData =
+    orderFromFeed ?? (currentOrder?.number === orderNumber ? currentOrder : null);
+
+  useEffect(() => {
+    if (
+      number !== undefined &&
+      Number.isInteger(orderNumber) &&
+      orderNumber > 0 &&
+      !orderData
+    ) {
+      void dispatch(fetchOrderByNumber(orderNumber));
+    }
+  }, [dispatch, number, orderNumber, orderData]);
+
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!orderData || !ingredients.length) {
+      return null;
+    }
 
     const date = new Date(orderData.createdAt);
 
@@ -29,6 +51,7 @@ export const OrderInfo = (): React.JSX.Element => {
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
+
           if (ingredient) {
             acc[item] = {
               ...ingredient,
@@ -56,6 +79,10 @@ export const OrderInfo = (): React.JSX.Element => {
       total,
     };
   }, [orderData, ingredients]);
+
+  if (!Number.isInteger(orderNumber) || orderNumber <= 0) {
+    return <p>Некорректный номер заказа</p>;
+  }
 
   if (!orderInfo) {
     return <Preloader />;
