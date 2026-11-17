@@ -1,41 +1,55 @@
 import { ProfileUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
-/** TODO: Взять данные пользователя из Redux */
-const user = {
-  name: '',
-  email: '',
-};
+import { useDispatch, useSelector } from '../../services/store';
+import { updateUser } from '../../services/userSlice';
+
+import type { RootState } from '../../services/store';
 
 export const Profile = (): React.JSX.Element => {
+  const dispatch = useDispatch();
+
+  const user = useSelector((state: RootState) => state.user.user);
+
   const [formValue, setFormValue] = useState({
-    name: user.name,
-    email: user.email,
+    name: user?.name ?? '',
+    email: user?.email ?? '',
     password: '',
   });
 
   useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      name: user.name,
-      email: user.email,
-    }));
+    if (user) {
+      setFormValue({
+        name: user.name,
+        email: user.email,
+        password: '',
+      });
+    }
   }, [user]);
 
   const isFormChanged =
-    formValue.name !== user.name ||
-    formValue.email !== user.email ||
+    formValue.name !== (user?.name ?? '') ||
+    formValue.email !== (user?.email ?? '') ||
     !!formValue.password;
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();
+
+    void dispatch(
+      updateUser({
+        name: formValue.name,
+        email: formValue.email,
+        ...(formValue.password ? { password: formValue.password } : {}),
+      })
+    );
   };
 
   const handleCancel = (e: SyntheticEvent): void => {
     e.preventDefault();
+
     setFormValue({
-      name: user.name,
-      email: user.email,
+      name: user?.name ?? '',
+      email: user?.email ?? '',
       password: '',
     });
   };

@@ -19,6 +19,7 @@ import {
   selectIngredientsLoading,
 } from '../../services/ingredientsSlice';
 import { useDispatch, useSelector } from '../../services/store';
+import { checkUserAuth } from '../../services/userSlice';
 import { ProtectedRoute } from '../protected-route/protected-route';
 
 import type { Location } from 'react-router-dom';
@@ -40,6 +41,7 @@ const App = (): React.JSX.Element => {
 
   useEffect(() => {
     void dispatch(fetchIngredients());
+    void dispatch(checkUserAuth());
   }, [dispatch]);
 
   const handleCloseModal = (): void => {
