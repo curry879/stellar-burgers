@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { forgotPasswordApi, resetPasswordApi } from '../utils/burger-api';
 
+import type { RootState } from './store';
+
 type TPasswordResetState = {
   isLoading: boolean;
   error: string | null;
@@ -59,3 +61,6 @@ const passwordResetSlice = createSlice({
 export const { clearPasswordResetError } = passwordResetSlice.actions;
 
 export const passwordResetReducer = passwordResetSlice.reducer;
+
+export const selectPasswordResetError = (state: RootState): string | null =>
+  state.passwordReset.error;

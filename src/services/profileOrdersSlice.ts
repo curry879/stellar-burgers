@@ -3,6 +3,7 @@ import { createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import { getOrdersApi } from '../utils/burger-api';
 import { logoutUser } from './userSlice';
 
+import type { RootState } from './store';
 import type { TOrder } from '@utils-types';
 
 type TProfileOrdersState = {
@@ -25,12 +26,7 @@ export const fetchProfileOrders = createAsyncThunk(
 const profileOrdersSlice = createSlice({
   name: 'profileOrders',
   initialState,
-  reducers: {
-    clearProfileOrders: (state) => {
-      state.orders = [];
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchProfileOrders.pending, (state) => {
@@ -53,6 +49,13 @@ const profileOrdersSlice = createSlice({
   },
 });
 
-export const { clearProfileOrders } = profileOrdersSlice.actions;
+export const selectProfileOrders = (state: RootState): TOrder[] =>
+  state.profileOrders.orders;
+
+export const selectProfileOrdersLoading = (state: RootState): boolean =>
+  state.profileOrders.isLoading;
+
+export const selectProfileOrdersError = (state: RootState): string | null =>
+  state.profileOrders.error;
 
 export const profileOrdersReducer = profileOrdersSlice.reducer;

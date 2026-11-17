@@ -2,25 +2,26 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { getFeedsApi, getOrderByNumberApi } from '../utils/burger-api';
 
-import type { TOrder } from '../utils/types';
+import type { TFeedState, TOrder } from '../utils/types';
 import type { RootState } from './store';
 
-type TFeedState = {
-  orders: TOrder[];
-  total: number;
-  totalToday: number;
+type TFeedSliceState = TFeedState & {
   currentOrder: TOrder | null;
-  isLoading: boolean;
-  error: string | null;
+  isOrderLoading: boolean;
+  orderError: string | null;
+  requestedOrderNumber: number | null;
 };
 
-const initialState: TFeedState = {
+const initialState: TFeedSliceState = {
   orders: [],
   total: 0,
   totalToday: 0,
   currentOrder: null,
   isLoading: false,
   error: null,
+  isOrderLoading: false,
+  orderError: null,
+  requestedOrderNumber: null,
 };
 
 export const fetchFeeds = createAsyncThunk('feed/fetchFeeds', getFeedsApi);
@@ -50,8 +51,29 @@ const feedSlice = createSlice({
         state.isLoading = false;
         state.error = action.error.message ?? 'Ошибка загрузки заказов';
       })
+
+      .addCase(fetchOrderByNumber.pending, (state, action) => {
+        state.isOrderLoading = true;
+        state.orderError = null;
+        state.currentOrder = null;
+        state.requestedOrderNumber = action.meta.arg;
+      })
       .addCase(fetchOrderByNumber.fulfilled, (state, action) => {
+        if (state.requestedOrderNumber !== action.meta.arg) {
+          return;
+        }
+
+        state.isOrderLoading = false;
         state.currentOrder = action.payload.orders[0] ?? null;
+      })
+      .addCase(fetchOrderByNumber.rejected, (state, action) => {
+        if (state.requestedOrderNumber !== action.meta.arg) {
+          return;
+        }
+
+        state.isOrderLoading = false;
+        state.currentOrder = null;
+        state.orderError = action.error.message ?? 'Не удалось загрузить заказ';
       });
   },
 });
@@ -62,5 +84,14 @@ export const selectFeedOrders = (state: RootState): TOrder[] => state.feed.order
 
 export const selectCurrentOrder = (state: RootState): TOrder | null =>
   state.feed.currentOrder;
+
+export const selectOrderLoading = (state: RootState): boolean =>
+  state.feed.isOrderLoading;
+
+export const selectOrderError = (state: RootState): string | null =>
+  state.feed.orderError;
+
+export const selectRequestedOrderNumber = (state: RootState): number | null =>
+  state.feed.requestedOrderNumber;
 
 export const feedReducer = feedSlice.reducer;

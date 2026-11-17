@@ -1,10 +1,8 @@
 import { LoginUI } from '@ui-pages';
-import { type SyntheticEvent, useState } from 'react';
+import { type SyntheticEvent, useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from '../../services/store';
-import { loginUser } from '../../services/userSlice';
-
-import type { RootState } from '../../services/store';
+import { clearUserError, loginUser, selectUserError } from '../../services/userSlice';
 
 export const Login = (): React.JSX.Element => {
   const dispatch = useDispatch();
@@ -12,7 +10,15 @@ export const Login = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const error = useSelector((state: RootState) => state.user.error);
+  const error = useSelector(selectUserError);
+
+  useEffect(() => {
+    dispatch(clearUserError());
+
+    return (): void => {
+      dispatch(clearUserError());
+    };
+  }, [dispatch]);
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();

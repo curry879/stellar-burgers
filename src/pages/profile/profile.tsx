@@ -2,14 +2,18 @@ import { ProfileUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from '../../services/store';
-import { updateUser } from '../../services/userSlice';
-
-import type { RootState } from '../../services/store';
+import {
+  clearUserError,
+  selectUser,
+  selectUserError,
+  updateUser,
+} from '../../services/userSlice';
 
 export const Profile = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
-  const user = useSelector((state: RootState) => state.user.user);
+  const user = useSelector(selectUser);
+  const error = useSelector(selectUserError);
 
   const [formValue, setFormValue] = useState({
     name: user?.name ?? '',
@@ -26,6 +30,14 @@ export const Profile = (): React.JSX.Element => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    dispatch(clearUserError());
+
+    return (): void => {
+      dispatch(clearUserError());
+    };
+  }, [dispatch]);
 
   const isFormChanged =
     formValue.name !== (user?.name ?? '') ||
@@ -47,6 +59,8 @@ export const Profile = (): React.JSX.Element => {
   const handleCancel = (e: SyntheticEvent): void => {
     e.preventDefault();
 
+    dispatch(clearUserError());
+
     setFormValue({
       name: user?.name ?? '',
       email: user?.email ?? '',
@@ -65,6 +79,7 @@ export const Profile = (): React.JSX.Element => {
     <ProfileUI
       formValue={formValue}
       isFormChanged={isFormChanged}
+      updateUserError={error ?? ''}
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}
       handleInputChange={handleInputChange}

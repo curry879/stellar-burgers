@@ -1,8 +1,9 @@
+import { Preloader } from '@ui';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useSelector } from '../../services/store';
+import { selectIsAuthChecked, selectUser } from '../../services/userSlice';
 
-import type { RootState } from '../../services/store';
 import type { ReactNode } from 'react';
 
 type TProtectedRouteProps = {
@@ -16,10 +17,11 @@ export const ProtectedRoute = ({
 }: TProtectedRouteProps): React.JSX.Element => {
   const location = useLocation();
 
-  const { user, isAuthChecked } = useSelector((state: RootState) => state.user);
+  const user = useSelector(selectUser);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
 
   if (!isAuthChecked) {
-    return <p>Проверка авторизации...</p>;
+    return <Preloader />;
   }
 
   if (onlyUnAuth && user) {

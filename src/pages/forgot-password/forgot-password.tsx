@@ -1,11 +1,13 @@
 import { ForgotPasswordUI } from '@ui-pages';
-import { type SyntheticEvent, useState } from 'react';
+import { type SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { forgotPassword } from '../../services/passwordResetSlice';
+import {
+  clearPasswordResetError,
+  forgotPassword,
+  selectPasswordResetError,
+} from '../../services/passwordResetSlice';
 import { useDispatch, useSelector } from '../../services/store';
-
-import type { RootState } from '../../services/store';
 
 export const ForgotPassword = (): React.JSX.Element => {
   const dispatch = useDispatch();
@@ -13,7 +15,15 @@ export const ForgotPassword = (): React.JSX.Element => {
 
   const [email, setEmail] = useState('');
 
-  const error = useSelector((state: RootState) => state.passwordReset.error);
+  const error = useSelector(selectPasswordResetError);
+
+  useEffect(() => {
+    dispatch(clearPasswordResetError());
+
+    return (): void => {
+      dispatch(clearPasswordResetError());
+    };
+  }, [dispatch]);
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();

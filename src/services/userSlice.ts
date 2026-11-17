@@ -11,6 +11,7 @@ import { deleteCookie, setCookie } from '../utils/cookie';
 
 import type { TLoginData, TRegisterData } from '../utils/burger-api';
 import type { TUser } from '../utils/types';
+import type { RootState } from './store';
 
 type TUserState = {
   user: TUser | null;
@@ -142,3 +143,12 @@ const userSlice = createSlice({
 export const { clearUserError } = userSlice.actions;
 
 export const userReducer = userSlice.reducer;
+
+export const selectUser = (state: RootState): TUser | null => state.user.user;
+
+export const selectIsAuthChecked = (state: RootState): boolean =>
+  state.user.isAuthChecked;
+
+export const selectUserError = (state: RootState): string | null => state.user.error;
+
+export const selectUserLoading = (state: RootState): boolean => state.user.isLoading;
